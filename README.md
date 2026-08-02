@@ -29,9 +29,9 @@ npm run dev
 
 Vercel + integración GitHub: push a `main` = deploy. Configurar en Vercel las env vars de `.env.example`.
 
-## Estado (2026-07-31)
+## Estado (2026-08-02)
 
-Scaffold v0 escrito offline (sin runtime local disponible aún) — **primer build de Vercel pendiente**. TODO próximos bloques: QA agent (rubrica temario/formato), logging persistente de runs (evidencia agent-ops), soporte/status agent, P&L cron, SEO landing.
+**LIVE: https://ruta-paes.vercel.app** — build limpio, landing verificada. E2E del flujo diagnóstico en curso. TODO próximos bloques: bump next 14.2.x (parche seguridad), QA agent (rubrica temario/formato), logging persistente de runs (evidencia agent-ops), Mercado Pago link real, soporte/status agent, P&L cron, SEO landing.
 
 ## AI-native operations
 
