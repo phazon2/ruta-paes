@@ -1,0 +1,38 @@
+# Ruta PAES
+
+**Tu último ensayo se convierte en tu plan: diagnóstico con IA, ruta de estudio y ejercicios dirigidos — por el precio de un completo.**
+
+Entry for **Build with Gemini XPRIZE** (xprize.devpost.com) · Category: Education & Human Potential · Started in-window 2026-07-30.
+
+## Qué hace
+
+1. El estudiante sube la foto/PDF del informe de su último ensayo PAES (de cualquier preu) o escribe sus puntajes.
+2. Gemini (multimodal) diagnostica el rendimiento por eje temático DEMRE.
+3. Sale un artefacto: **ruta personal de 14 días + ejercicios originales estilo DEMRE** por eje débil, con soluciones en chileno.
+4. Pago vía link de Mercado Pago (CLP $2.990) desbloquea el pack completo, entregado por WhatsApp.
+
+## Stack
+
+- Next.js 14 (App Router, JS) en Vercel
+- Gemini API vía `@google/genai` (AI Studio) — modelo configurable con `GEMINI_MODEL`
+- Mercado Pago Link de pago (sin backend de pagos en v0)
+
+## Dev
+
+```bash
+cp .env.example .env.local   # completar GEMINI_API_KEY
+npm install
+npm run dev
+```
+
+## Deploy
+
+Vercel + integración GitHub: push a `main` = deploy. Configurar en Vercel las env vars de `.env.example`.
+
+## Estado (2026-07-31)
+
+Scaffold v0 escrito offline (sin runtime local disponible aún) — **primer build de Vercel pendiente**. TODO próximos bloques: QA agent (rubrica temario/formato), logging persistente de runs (evidencia agent-ops), soporte/status agent, P&L cron, SEO landing.
+
+## AI-native operations
+
+Fulfillment (parse → diagnóstico → drills → QA → entrega) corre con agentes; cada run se loggea (JSONL). Claude = COO · Gemini = production workforce · humano = judgment + accounts.
