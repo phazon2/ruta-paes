@@ -228,6 +228,9 @@ export default function Home() {
               <div className="nota">
                 Desbloquea tu ruta completa de 14 días + pack de ejercicios por cada eje
                 débil, con soluciones paso a paso. Entrega por WhatsApp.
+                <br />
+                <strong>En Mercado Pago ingresa el monto: $2.990.</strong> Luego manda tu
+                comprobante y recibe tu pack.
               </div>
               <a
                 className="btn"
