@@ -71,6 +71,11 @@ export default function Home() {
         Diagnóstico con IA, ruta de estudio de 14 días y ejercicios dirigidos — por el
         precio de un completo.
       </p>
+      <p className="urgencia">
+        Quedan {Math.max(1, Math.ceil((new Date("2026-11-30T08:00:00-03:00") - Date.now()) / 604800000))} semanas
+        para la PAES · ¿Diste la de invierno? El informe que te llegó el 17 de julio
+        es tu diagnóstico: súbelo.
+      </p>
 
       {!result && (
         <form className="card" onSubmit={onSubmit}>

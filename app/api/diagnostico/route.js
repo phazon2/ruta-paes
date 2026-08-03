@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateDiagnostico } from "../../../lib/gemini";
+import { logRun } from "../../../lib/oplog";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -38,33 +39,41 @@ export async function POST(req) {
 
     const { data, model } = await generateDiagnostico({ scores, fileBase64, mimeType });
 
-    // Agent-ops evidence: JSONL run log (Vercel function logs; persistente vendrá en bloque posterior)
-    console.log(
-      JSON.stringify({
-        type: "fulfillment_run",
-        runId,
-        startedAt,
-        finishedAt: new Date().toISOString(),
-        model,
-        inputMode: fileBase64 ? "file" : "scores",
-        prueba: data.prueba || (scores && scores.prueba) || null,
-        ejesDebiles: (data.diagnostico || []).filter((d) => d.nivel === "debil").map((d) => d.eje),
-        ok: true,
-      })
-    );
+    // Agent-ops evidence: JSONL run log (console + persistente en branch "logs" del repo)
+    const runLog = {
+      type: "fulfillment_run",
+      runId,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      model,
+      inputMode: fileBase64 ? "file" : "scores",
+      prueba: data.prueba || (scores && scores.prueba) || null,
+      ejesDebiles: (data.diagnostico || []).filter((d) => d.nivel === "debil").map((d) => d.eje),
+      ok: true,
+    };
+    console.log(JSON.stringify(runLog));
+    try {
+      await logRun(runLog);
+    } catch (e) {
+      console.log("oplog fail: " + String(e && e.message ? e.message : e));
+    }
 
     return NextResponse.json({ runId, ...data });
   } catch (err) {
-    console.log(
-      JSON.stringify({
-        type: "fulfillment_run",
-        runId,
-        startedAt,
-        finishedAt: new Date().toISOString(),
-        ok: false,
-        error: String(err && err.message ? err.message : err),
-      })
-    );
+    const errLog = {
+      type: "fulfillment_run",
+      runId,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      ok: false,
+      error: String(err && err.message ? err.message : err),
+    };
+    console.log(JSON.stringify(errLog));
+    try {
+      await logRun(errLog);
+    } catch (e) {
+      console.log("oplog fail: " + String(e && e.message ? e.message : e));
+    }
     return NextResponse.json(
       { error: "No pudimos generar tu diagnóstico. Intenta de nuevo en un momento." },
       { status: 500 }
