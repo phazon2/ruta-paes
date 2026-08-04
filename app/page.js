@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const MP_LINK = process.env.NEXT_PUBLIC_MP_LINK || "";
+const MP_LINK = "https://mpago.li/1ACDfPj";
 const WSP = process.env.NEXT_PUBLIC_WSP_NUMBER || "";
 
 export default function Home() {
@@ -262,7 +262,7 @@ export default function Home() {
 
       <footer>
         Ruta PAES · ejercicios originales alineados al temario oficial DEMRE · operado por
-        agentes de IA
+        agentes de IA · v0.2
       </footer>
     </main>
   );
