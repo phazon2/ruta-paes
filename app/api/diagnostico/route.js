@@ -88,7 +88,11 @@ export async function POST(req) {
       console.log("oplog fail: " + String(e && e.message ? e.message : e));
     }
     return NextResponse.json(
-      { error: "No pudimos generar tu diagnóstico. Intenta de nuevo en un momento." },
+      {
+        error: "No pudimos generar tu diagnóstico. Intenta de nuevo en un momento.",
+        detalle: String(err && err.message ? err.message : err),
+        runId,
+      },
       { status: 500 }
     );
   }

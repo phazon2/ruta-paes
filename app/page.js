@@ -53,7 +53,12 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error generando el diagnóstico");
+      if (!res.ok) {
+        throw new Error(
+          (data.error || "Error generando el diagnóstico") +
+            (data.detalle ? ` [${data.detalle}]` : "")
+        );
+      }
       setResult(data);
     } catch (err) {
       setError(err.message);
@@ -262,7 +267,7 @@ export default function Home() {
 
       <footer>
         Ruta PAES · ejercicios originales alineados al temario oficial DEMRE · operado por
-        agentes de IA · v0.3
+        agentes de IA · v0.4
       </footer>
     </main>
   );
