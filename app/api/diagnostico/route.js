@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateDiagnostico } from "../../../lib/gemini";
+import { qaDrills } from "../../../lib/qa";
 import { logRun } from "../../../lib/oplog";
 
 export const runtime = "nodejs";
@@ -39,6 +40,17 @@ export async function POST(req) {
 
     const { data, model } = await generateDiagnostico({ scores, fileBase64, mimeType });
 
+    // QA agent: revisa cada drill vs rubrica DEMRE; los fails vuelven corregidos.
+    // Si el QA revienta, se entregan los drills originales (fail-safe).
+    let qaResult = { skipped: true, reason: "error" };
+    try {
+      const q = await qaDrills(data.drills, data.prueba);
+      data.drills = q.drills;
+      qaResult = q.qa;
+    } catch (e) {
+      qaResult = { skipped: true, reason: "qa error: " + String(e && e.message ? e.message : e) };
+    }
+
     // Agent-ops evidence: JSONL run log (console + persistente en branch "logs" del repo)
     const runLog = {
       type: "fulfillment_run",
@@ -49,6 +61,7 @@ export async function POST(req) {
       inputMode: fileBase64 ? "file" : "scores",
       prueba: data.prueba || (scores && scores.prueba) || null,
       ejesDebiles: (data.diagnostico || []).filter((d) => d.nivel === "debil").map((d) => d.eje),
+      qa: qaResult,
       ok: true,
     };
     console.log(JSON.stringify(runLog));
