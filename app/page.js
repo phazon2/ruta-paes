@@ -267,7 +267,7 @@ export default function Home() {
 
       <footer>
         Ruta PAES · ejercicios originales alineados al temario oficial DEMRE · operado por
-        agentes de IA · v0.5
+        agentes de IA · v0.6
       </footer>
     </main>
   );
