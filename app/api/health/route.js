@@ -30,7 +30,7 @@ export async function GET(req) {
   }
   const env = {
     GEMINI_API_KEY: Boolean(process.env.GEMINI_API_KEY),
-    GEMINI_MODEL: process.env.GEMINI_MODEL || "(default gemini-2.5-flash)",
+    GEMINI_MODEL: process.env.GEMINI_MODEL || "(default en codigo: gemini-3.6-flash)",
     GITHUB_PAT: Boolean(process.env.GITHUB_PAT),
   };
 
