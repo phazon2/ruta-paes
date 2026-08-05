@@ -38,6 +38,7 @@ export async function GET(req) {
 
   const steps = {};
   const t0 = Date.now();
+  const hid = `health_${Date.now()}`;
   try {
     const { data, model } = await generateDiagnostico({
       scores: { prueba: "Matemática M1", puntaje: "612", detalle: "Álgebra 9/20, Geometría 4/12" },
@@ -50,6 +51,10 @@ export async function GET(req) {
       dias: (data.ruta || []).length,
       drills: (data.drills || []).length,
     };
+    // log parcial: si el QA o el timeout matan la funcion, igual queda evidencia
+    try {
+      await logRun({ type: "health_partial", runId: hid, steps });
+    } catch (_) {}
 
     const t1 = Date.now();
     try {
@@ -61,7 +66,7 @@ export async function GET(req) {
 
     const t2 = Date.now();
     try {
-      const r = await logRun({ type: "health_check", runId: `health_${Date.now()}`, steps });
+      const r = await logRun({ type: "health_check", runId: hid, steps });
       steps.oplog = { ok: r.ok, ms: Date.now() - t2, status: r.status || null, reason: r.reason || null };
     } catch (e) {
       steps.oplog = { ok: false, ms: Date.now() - t2, error: String(e && e.message ? e.message : e) };
@@ -69,15 +74,16 @@ export async function GET(req) {
 
     return NextResponse.json({ ok: true, env, totalMs: Date.now() - t0, steps });
   } catch (err) {
-    return NextResponse.json(
-      {
-        ok: false,
-        env,
-        totalMs: Date.now() - t0,
-        steps,
-        error: String(err && err.message ? err.message : err),
-      },
-      { status: 500 }
-    );
+    const payload = {
+      ok: false,
+      env,
+      totalMs: Date.now() - t0,
+      steps,
+      error: String(err && err.message ? err.message : err),
+    };
+    try {
+      await logRun({ type: "health_error", runId: hid, ...payload });
+    } catch (_) {}
+    return NextResponse.json(payload, { status: 500 });
   }
 }
