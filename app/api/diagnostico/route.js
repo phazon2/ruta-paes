@@ -44,7 +44,11 @@ export async function POST(req) {
     // Si el QA revienta, se entregan los drills originales (fail-safe).
     let qaResult = { skipped: true, reason: "error" };
     try {
-      const q = await qaDrills(data.drills, data.prueba);
+      // presupuesto duro: si el QA se demora, entregamos igual (el usuario manda)
+      const q = await Promise.race([
+        qaDrills(data.drills, data.prueba),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("qa timeout 18s")), 18000)),
+      ]);
       data.drills = q.drills;
       qaResult = q.qa;
     } catch (e) {
