@@ -13,7 +13,21 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function GET(req) {
-  const full = new URL(req.url).searchParams.get("full") === "1";
+  const sp = new URL(req.url).searchParams;
+  const full = sp.get("full") === "1";
+
+  // ?models=1 -> lista los modelos disponibles para esta API key
+  if (sp.get("models") === "1") {
+    const r = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100",
+      { headers: { "x-goog-api-key": process.env.GEMINI_API_KEY || "" } }
+    );
+    const j = await r.json();
+    const names = (j.models || [])
+      .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
+      .map((m) => m.name.replace("models/", ""));
+    return NextResponse.json({ ok: r.ok, count: names.length, models: names, error: j.error || null });
+  }
   const env = {
     GEMINI_API_KEY: Boolean(process.env.GEMINI_API_KEY),
     GEMINI_MODEL: process.env.GEMINI_MODEL || "(default gemini-2.5-flash)",
