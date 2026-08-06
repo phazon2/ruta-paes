@@ -53,8 +53,14 @@ export async function GET(req) {
     };
     // log parcial: si el QA o el timeout matan la funcion, igual queda evidencia
     try {
-      await logRun({ type: "health_partial", runId: hid, steps });
+      const dumpNow = sp.get("dump") === "1" ? { data } : {};
+      await logRun({ type: "health_partial", runId: hid, steps, ...dumpNow });
     } catch (_) {}
+
+    // ?noqa=1 -> devolvemos apenas termina el diagnostico (para capturar el dump rapido)
+    if (sp.get("noqa") === "1") {
+      return NextResponse.json({ ok: true, env, totalMs: Date.now() - t0, steps, data });
+    }
 
     const t1 = Date.now();
     try {
