@@ -66,7 +66,9 @@ export async function GET(req) {
 
     const t2 = Date.now();
     try {
-      const r = await logRun({ type: "health_check", runId: hid, steps });
+      // ?dump=1 -> guarda la salida real (para usarla en assets/demo)
+      const extra = sp.get("dump") === "1" ? { data } : {};
+      const r = await logRun({ type: "health_check", runId: hid, steps, ...extra });
       steps.oplog = { ok: r.ok, ms: Date.now() - t2, status: r.status || null, reason: r.reason || null };
     } catch (e) {
       steps.oplog = { ok: false, ms: Date.now() - t2, error: String(e && e.message ? e.message : e) };
