@@ -25,6 +25,10 @@ p.urgencia { color: var(--accent); font-size: 0.9rem; margin-bottom: 22px; borde
 
 .card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
 
+.paises { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+.paises .pais { flex: 0 0 auto; padding: 8px 14px; border: 1px solid #2a2f3a; background: transparent; color: var(--muted); border-radius: 999px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+.paises .pais.activo { border-color: var(--accent); color: var(--text); background: rgba(255, 176, 58, 0.10); font-weight: 600; }
+
 .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
 .tabs button { flex: 1; padding: 12px; border: 1px solid #2a2f3a; background: transparent; color: var(--muted); border-radius: 10px; font-size: 0.95rem; cursor: pointer; }
 .tabs button.active { border-color: var(--accent); color: var(--text); background: rgba(255, 176, 58, 0.08); }

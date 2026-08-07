@@ -14,7 +14,7 @@ export async function POST(req) {
 
   try {
     const body = await req.json();
-    const { scores, fileBase64, mimeType } = body || {};
+    const { scores, fileBase64, mimeType, examId } = body || {};
 
     if (fileBase64) {
       const approxBytes = Math.floor(fileBase64.length * 0.75);
@@ -38,7 +38,7 @@ export async function POST(req) {
       );
     }
 
-    const { data, model } = await generateDiagnostico({ scores, fileBase64, mimeType });
+    const { data, model, exam } = await generateDiagnostico({ scores, fileBase64, mimeType, examId });
 
     // QA agent: revisa cada drill vs rubrica DEMRE; los fails vuelven corregidos.
     // Si el QA revienta, se entregan los drills originales (fail-safe).
@@ -46,7 +46,7 @@ export async function POST(req) {
     try {
       // presupuesto duro: si el QA se demora, entregamos igual (el usuario manda)
       const q = await Promise.race([
-        qaDrills(data.drills, data.prueba),
+        qaDrills(data.drills, data.prueba, examId),
         new Promise((_, rej) => setTimeout(() => rej(new Error("qa timeout 18s")), 18000)),
       ]);
       data.drills = q.drills;
@@ -62,6 +62,7 @@ export async function POST(req) {
       startedAt,
       finishedAt: new Date().toISOString(),
       model,
+      exam,
       inputMode: fileBase64 ? "file" : "scores",
       prueba: data.prueba || (scores && scores.prueba) || null,
       ejesDebiles: (data.diagnostico || []).filter((d) => d.nivel === "debil").map((d) => d.eje),
