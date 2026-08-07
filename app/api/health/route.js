@@ -40,8 +40,16 @@ export async function GET(req) {
   const t0 = Date.now();
   const hid = `health_${Date.now()}`;
   try {
+    const examId = sp.get("examen") || "paes";
+    const canned = {
+      paes: { prueba: "Matemática M1", puntaje: "612", detalle: "Álgebra 9/20, Geometría 4/12" },
+      icfes: { prueba: "Matemáticas", puntaje: "58", detalle: "Lectura Crítica 62, Matemáticas 45, Sociales 55, Ciencias 51, Inglés 60" },
+      exani: { prueba: "Pensamiento Matemático", puntaje: "980", detalle: "Matemático 45/60, Comprensión Lectora 38/50" },
+      peru: { prueba: "Razonamiento Matemático", puntaje: "780", detalle: "RM 12/30, RV 20/30, Aritmética 9/20" },
+    };
     const { data, model } = await generateDiagnostico({
-      scores: { prueba: "Matemática M1", puntaje: "612", detalle: "Álgebra 9/20, Geometría 4/12" },
+      examId,
+      scores: canned[examId] || canned.paes,
     });
     steps.diagnostico = {
       ok: true,
