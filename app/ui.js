@@ -285,7 +285,7 @@ export default function Ui({ defaultExam = "paes" }) {
 
       <footer>
         Ruta PAES · ejercicios originales alineados al {`temario oficial de ${exam.organismo}`} · operado por
-        agentes de IA · v0.7
+        agentes de IA · v1.0 multipaís
       </footer>
     </main>
   );
