@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata = {
   title: "Ruta PAES · ICFES · EXANI — tu ensayo se convierte en tu plan",
@@ -9,7 +10,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es-CL">
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Conteo de visitantes para la evidencia del concurso. Sin cookies y
+            sin datos personales: no reemplaza captura de correo, y no la queremos. */}
+        <Analytics />
+      </body>
     </html>
   );
 }
