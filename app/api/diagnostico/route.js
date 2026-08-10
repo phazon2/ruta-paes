@@ -67,6 +67,10 @@ export async function POST(req) {
       prueba: data.prueba || (scores && scores.prueba) || null,
       ejesDebiles: (data.diagnostico || []).filter((d) => d.nivel === "debil").map((d) => d.eje),
       qa: qaResult,
+      // completitud del pack: sin esto, un pack corto se entrega sin dejar rastro
+      packCompleto: data.completo === true,
+      dias: (data.ruta || []).length,
+      drills: (data.drills || []).length,
       ok: true,
     };
     console.log(JSON.stringify(runLog));

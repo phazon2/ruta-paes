@@ -118,15 +118,24 @@ export default function Ui({ defaultExam = "paes" }) {
       </p>
 
       {packMode && result && (
-        <div className="pack-header">
-          <h1>
-            Tu Ruta {exam.nombre} — plan de 14 días
-          </h1>
-          <p>
-            {exam.nombreLargo} · {exam.organismo} · {exam.fechaTexto} ·{" "}
-            {result.prueba || ""}
-          </p>
-        </div>
+        <>
+          <div className="pack-header">
+            <h1>
+              Tu Ruta {exam.nombre} — plan de {result.dias || 14} días
+            </h1>
+            <p>
+              {exam.nombreLargo} · {exam.organismo} · {exam.fechaTexto} ·{" "}
+              {result.prueba || ""}
+            </p>
+          </div>
+          {result.completo === false && (
+            <div className="error no-print">
+              <strong>Pack incompleto — no lo mandes así.</strong> El modelo
+              devolvió {result.dias} de 14 días y {result.totalDrills} de 2
+              ejercicios, incluso después del reintento. Vuelve a generarlo.
+            </div>
+          )}
+        </>
       )}
 
       {!result && (
