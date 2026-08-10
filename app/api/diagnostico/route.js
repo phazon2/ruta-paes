@@ -8,13 +8,40 @@ export const maxDuration = 60;
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8 MB tras decode aprox
 
+// El pack completo se recorta EN EL SERVIDOR. Antes viajaban los 14 dias y las
+// dos soluciones al navegador y la pagina solo los tapaba con un blur: bastaba
+// abrir la pestaña de red, o adivinar ?pack=1, para llevarse gratis lo que se
+// cobra. Lo que no se pago no sale de aca.
+//
+// Falla cerrado a proposito: sin PACK_KEY configurada nadie recibe el pack
+// completo, ni siquiera el operador. Preferimos bloquear a Diego que regalar
+// el producto.
+function esOperador(packKey) {
+  const real = process.env.PACK_KEY || "";
+  return real.length > 0 && packKey === real;
+}
+
+function recortarParaVisitante(data) {
+  const drills = (data.drills || []).slice(0, 2).map((d, i) => {
+    if (i === 0) return d; // el primer ejercicio va completo: es la muestra
+    const { solucion, correcta, ...sinRespuesta } = d;
+    return sinRespuesta;
+  });
+  return {
+    ...data,
+    ruta: (data.ruta || []).slice(0, 8), // 5 visibles + 3 borrosos
+    drills,
+  };
+}
+
 export async function POST(req) {
   const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const startedAt = new Date().toISOString();
 
   try {
     const body = await req.json();
-    const { scores, fileBase64, mimeType, examId } = body || {};
+    const { scores, fileBase64, mimeType, examId, packKey } = body || {};
+    const operador = esOperador(packKey);
 
     if (fileBase64) {
       const approxBytes = Math.floor(fileBase64.length * 0.75);
@@ -71,6 +98,7 @@ export async function POST(req) {
       packCompleto: data.completo === true,
       dias: (data.ruta || []).length,
       drills: (data.drills || []).length,
+      entrega: operador ? "pack" : "muestra",
       ok: true,
     };
     console.log(JSON.stringify(runLog));
@@ -80,7 +108,12 @@ export async function POST(req) {
       console.log("oplog fail: " + String(e && e.message ? e.message : e));
     }
 
-    return NextResponse.json({ runId, ...data });
+    return NextResponse.json({
+      runId,
+      full: operador,
+      packKeyConfigurada: Boolean(process.env.PACK_KEY),
+      ...(operador ? data : recortarParaVisitante(data)),
+    });
   } catch (err) {
     const errLog = {
       type: "fulfillment_run",

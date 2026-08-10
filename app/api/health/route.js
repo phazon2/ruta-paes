@@ -36,6 +36,8 @@ export async function GET(req) {
     // caso en que alguien paga sin dejar contacto. Booleano a proposito: el
     // numero no se expone.
     NEXT_PUBLIC_WSP_NUMBER: Boolean(process.env.NEXT_PUBLIC_WSP_NUMBER),
+    // Si esto es false nadie puede generar el pack completo, ni el operador.
+    PACK_KEY: Boolean(process.env.PACK_KEY),
   };
 
   if (!full) return NextResponse.json({ ok: true, env });

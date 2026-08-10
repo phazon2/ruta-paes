@@ -18,8 +18,11 @@ export default function Ui({ defaultExam = "paes" }) {
   // paywall, listo para imprimir a PDF y mandar por WhatsApp. La usa Diego,
   // no el estudiante. Se lee en un efecto para no romper la hidratacion.
   const [packMode, setPackMode] = useState(false);
+  const [packKey, setPackKey] = useState("");
   useEffect(() => {
-    setPackMode(new URLSearchParams(window.location.search).get("pack") === "1");
+    const sp = new URLSearchParams(window.location.search);
+    setPackMode(sp.get("pack") === "1");
+    setPackKey(sp.get("key") || "");
   }, []);
 
   const [examId, setExamId] = useState(defaultExam);
@@ -62,6 +65,7 @@ export default function Ui({ defaultExam = "paes" }) {
       }
       payload = { scores: { prueba, puntaje, detalle }, examId };
     }
+    if (packKey) payload.packKey = packKey;
 
     setLoading(true);
     try {
@@ -128,7 +132,15 @@ export default function Ui({ defaultExam = "paes" }) {
               {result.prueba || ""}
             </p>
           </div>
-          {result.completo === false && (
+          {result.full === false && (
+            <div className="error no-print">
+              <strong>Esto es la muestra, no el pack.</strong>{" "}
+              {result.packKeyConfigurada
+                ? "La clave del link no es válida: revisa el parámetro key."
+                : "Falta configurar PACK_KEY en Vercel; sin esa variable el servidor no entrega el pack completo a nadie."}
+            </div>
+          )}
+          {result.full && result.completo === false && (
             <div className="error no-print">
               <strong>Pack incompleto — no lo mandes así.</strong> El modelo
               devolvió {result.dias} de 14 días y {result.totalDrills} de 2
