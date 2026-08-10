@@ -1,6 +1,6 @@
 # Ruta PAES
 
-**Tu último ensayo se convierte en tu plan: diagnóstico con IA, ruta de estudio y ejercicios dirigidos — por el precio de un completo.**
+**Tu último ensayo se convierte en tu plan: diagnóstico con IA, ruta de estudio y ejercicios dirigidos — por menos que una hora de profe particular.**
 
 Entry for **Build with Gemini XPRIZE** (xprize.devpost.com) · Category: Education & Human Potential · Started in-window 2026-07-30.
 
@@ -9,7 +9,7 @@ Entry for **Build with Gemini XPRIZE** (xprize.devpost.com) · Category: Educati
 1. El estudiante sube la foto/PDF del informe de su último ensayo PAES (de cualquier preu) o escribe sus puntajes.
 2. Gemini (multimodal) diagnostica el rendimiento por eje temático DEMRE.
 3. Sale un artefacto: **ruta personal de 14 días + ejercicios originales estilo DEMRE** por eje débil, con soluciones en chileno.
-4. Pago vía link de Mercado Pago (CLP $2.990) desbloquea el pack completo, entregado por WhatsApp.
+4. Pago vía link de Mercado Pago (CLP $9.990) desbloquea el pack completo, entregado por WhatsApp.
 
 ## Stack
 
