@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+// Fallback de monto abierto: solo para los productos que todavia no tienen link
+// de monto fijo propio (ver mpLink en lib/products.js).
 const MP_LINK = "https://mpago.li/1ACDfPj";
 
 export default function ProductoUi({ p }) {
@@ -158,9 +160,18 @@ export default function ProductoUi({ p }) {
               <div className="nota">
                 Desbloquea el plan completo de 14 días y todos los textos listos para usar.
                 <br />
-                <strong>En Mercado Pago ingresa el monto: {p.precio}.</strong>
+                <strong>
+                  {p.mpLink
+                    ? `El link ya viene con el monto: ${p.precio}.`
+                    : `En Mercado Pago ingresa el monto: ${p.precio}.`}
+                </strong>
               </div>
-              <a className="btn" href={MP_LINK} target="_blank" rel="noopener noreferrer">
+              <a
+                className="btn"
+                href={p.mpLink || MP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Desbloquear todo
               </a>
             </div>

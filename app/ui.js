@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { EXAMS, getExam, semanasRestantes } from "../lib/exams";
 
+// Fallback de monto abierto: solo para los examenes que todavia no tienen link
+// de monto fijo propio (ver mpLink en lib/exams.js).
 const MP_LINK = "https://mpago.li/1ACDfPj";
 const WSP = process.env.NEXT_PUBLIC_WSP_NUMBER || "";
 
@@ -252,17 +254,25 @@ export default function Ui({ defaultExam = "paes" }) {
                 Desbloquea tu ruta completa de 14 días + pack de ejercicios por cada eje
                 débil, con soluciones paso a paso. Entrega por WhatsApp.
                 <br />
-                <strong>{`En Mercado Pago ingresa el monto: ${exam.precio}.`}</strong> Luego manda tu
-                comprobante y recibe tu pack.
+                <strong>
+                  {exam.mpLink
+                    ? `El link ya viene con el monto: ${exam.precioTexto}.`
+                    : `En Mercado Pago ingresa el monto: ${exam.precio}.`}
+                </strong>{" "}
+                Luego manda tu comprobante y recibe tu pack.
               </div>
               <a
                 className="btn"
-                href={MP_LINK || "#"}
+                href={exam.mpLink || MP_LINK || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={!MP_LINK ? { opacity: 0.55, pointerEvents: "none" } : {}}
+                style={
+                  !(exam.mpLink || MP_LINK) ? { opacity: 0.55, pointerEvents: "none" } : {}
+                }
               >
-                {MP_LINK ? "Desbloquear mi pack completo" : "Pago disponible pronto"}
+                {exam.mpLink || MP_LINK
+                  ? "Desbloquear mi pack completo"
+                  : "Pago disponible pronto"}
               </a>
               {WSP && (
                 <a
