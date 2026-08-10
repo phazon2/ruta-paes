@@ -9,7 +9,7 @@ Entry for **Build with Gemini XPRIZE** (xprize.devpost.com) · Category: Educati
 1. El estudiante sube la foto/PDF del informe de su último ensayo PAES (de cualquier preu) o escribe sus puntajes.
 2. Gemini (multimodal) diagnostica el rendimiento por eje temático DEMRE.
 3. Sale un artefacto: **ruta personal de 14 días + ejercicios originales estilo DEMRE** por eje débil, con soluciones en chileno.
-4. Pago vía link de Mercado Pago (CLP $9.990) desbloquea el pack completo, entregado por WhatsApp.
+4. El estudiante escribe por WhatsApp, recibe el link de pago de monto fijo (CLP $9.990) y el pack completo se entrega por ahí mismo. El contacto va **antes** del pago: Mercado Pago no devuelve al comprador al sitio, así que cualquier instrucción posterior al pago queda en una pantalla que ya no ve.
 
 ## Stack
 

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 
-// Fallback de monto abierto: solo para los productos que todavia no tienen link
-// de monto fijo propio (ver mpLink en lib/products.js).
+// Mismo orden que en la home: WhatsApp primero, pago despues. Ver el comentario
+// largo en app/ui.js. Fallback al link de pago solo si no hay numero configurado.
 const MP_LINK = "https://mpago.li/1ACDfPj";
+const WSP = process.env.NEXT_PUBLIC_WSP_NUMBER || "";
 
 export default function ProductoUi({ p }) {
   const [mode, setMode] = useState("archivo");
@@ -160,20 +161,40 @@ export default function ProductoUi({ p }) {
               <div className="nota">
                 Desbloquea el plan completo de 14 días y todos los textos listos para usar.
                 <br />
-                <strong>
-                  {p.mpLink
-                    ? `El link ya viene con el monto: ${p.precio}.`
-                    : `En Mercado Pago ingresa el monto: ${p.precio}.`}
-                </strong>
+                {WSP ? (
+                  <strong>Escríbeme por WhatsApp y te paso el link de pago.</strong>
+                ) : (
+                  <>
+                    <strong>
+                      {p.mpLink
+                        ? `El link ya viene con el monto: ${p.precio}.`
+                        : `En Mercado Pago ingresa el monto: ${p.precio}.`}
+                    </strong>{" "}
+                    Luego manda tu comprobante por WhatsApp y recibe tu pack.
+                  </>
+                )}
               </div>
-              <a
-                className="btn"
-                href={p.mpLink || MP_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Desbloquear todo
-              </a>
+              {WSP ? (
+                <a
+                  className="btn"
+                  href={`https://wa.me/${WSP}?text=${encodeURIComponent(
+                    `Hola! Quiero mi pack de ${p.nombre}.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Escríbeme y te paso el link de pago
+                </a>
+              ) : (
+                <a
+                  className="btn"
+                  href={p.mpLink || MP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Desbloquear todo
+                </a>
+              )}
             </div>
           </div>
 

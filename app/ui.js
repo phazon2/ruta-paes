@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { EXAMS, getExam, semanasRestantes } from "../lib/exams";
 
-// Fallback de monto abierto: solo para los examenes que todavia no tienen link
-// de monto fijo propio (ver mpLink en lib/exams.js).
+// El orden es: WhatsApp primero, pago despues. Mercado Pago no devuelve al
+// comprador a nuestro sitio, asi que cualquier instruccion posterior al pago
+// queda en una pantalla que ya no ve: pagaba y desaparecia sin dejar contacto.
+// Con entrega manual no se le cobra a alguien a quien no podemos escribir.
+//
+// Fallback: si NEXT_PUBLIC_WSP_NUMBER no esta configurado no hay a donde
+// escribir, y entonces (y solo entonces) se muestra el link de pago directo.
 const MP_LINK = "https://mpago.li/1ACDfPj";
 const WSP = process.env.NEXT_PUBLIC_WSP_NUMBER || "";
 
@@ -254,34 +259,43 @@ export default function Ui({ defaultExam = "paes" }) {
                 Desbloquea tu ruta completa de 14 días + pack de ejercicios por cada eje
                 débil, con soluciones paso a paso. Entrega por WhatsApp.
                 <br />
-                <strong>
-                  {exam.mpLink
-                    ? `El link ya viene con el monto: ${exam.precioTexto}.`
-                    : `En Mercado Pago ingresa el monto: ${exam.precio}.`}
-                </strong>{" "}
-                Luego manda tu comprobante y recibe tu pack.
+                {WSP ? (
+                  <strong>Escríbeme por WhatsApp y te paso el link de pago.</strong>
+                ) : (
+                  <>
+                    <strong>
+                      {exam.mpLink
+                        ? `El link ya viene con el monto: ${exam.precioTexto}.`
+                        : `En Mercado Pago ingresa el monto: ${exam.precio}.`}
+                    </strong>{" "}
+                    Luego manda tu comprobante por WhatsApp y recibe tu pack.
+                  </>
+                )}
               </div>
-              <a
-                className="btn"
-                href={exam.mpLink || MP_LINK || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={
-                  !(exam.mpLink || MP_LINK) ? { opacity: 0.55, pointerEvents: "none" } : {}
-                }
-              >
-                {exam.mpLink || MP_LINK
-                  ? "Desbloquear mi pack completo"
-                  : "Pago disponible pronto"}
-              </a>
-              {WSP && (
+              {WSP ? (
                 <a
-                  className="btn secondary"
-                  href={`https://wa.me/${WSP}?text=${encodeURIComponent("Hola! Pagué mi Ruta PAES, este es mi comprobante:")}`}
+                  className="btn"
+                  href={`https://wa.me/${WSP}?text=${encodeURIComponent(
+                    `Hola! Quiero mi Ruta ${exam.nombre} completa.`
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Ya pagué — enviar comprobante
+                  Escríbeme y te paso el link de pago
+                </a>
+              ) : (
+                <a
+                  className="btn"
+                  href={exam.mpLink || MP_LINK || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={
+                    !(exam.mpLink || MP_LINK) ? { opacity: 0.55, pointerEvents: "none" } : {}
+                  }
+                >
+                  {exam.mpLink || MP_LINK
+                    ? "Desbloquear mi pack completo"
+                    : "Pago disponible pronto"}
                 </a>
               )}
             </div>

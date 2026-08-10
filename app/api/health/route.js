@@ -32,6 +32,10 @@ export async function GET(req) {
     GEMINI_API_KEY: Boolean(process.env.GEMINI_API_KEY),
     GEMINI_MODEL: process.env.GEMINI_MODEL || "(default en codigo: gemini-3.6-flash)",
     GITHUB_PAT: Boolean(process.env.GITHUB_PAT),
+    // Si esto es false, el paywall cae al link de pago directo y volvemos al
+    // caso en que alguien paga sin dejar contacto. Booleano a proposito: el
+    // numero no se expone.
+    NEXT_PUBLIC_WSP_NUMBER: Boolean(process.env.NEXT_PUBLIC_WSP_NUMBER),
   };
 
   if (!full) return NextResponse.json({ ok: true, env });
