@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EXAMS, getExam, semanasRestantes } from "../lib/exams";
 
 // El orden es: WhatsApp primero, pago despues. Mercado Pago no devuelve al
@@ -14,6 +14,14 @@ const MP_LINK = "https://mpago.li/1ACDfPj";
 const WSP = process.env.NEXT_PUBLIC_WSP_NUMBER || "";
 
 export default function Ui({ defaultExam = "paes" }) {
+  // Vista de entrega (?pack=1): muestra el resultado completo, sin borrosos ni
+  // paywall, listo para imprimir a PDF y mandar por WhatsApp. La usa Diego,
+  // no el estudiante. Se lee en un efecto para no romper la hidratacion.
+  const [packMode, setPackMode] = useState(false);
+  useEffect(() => {
+    setPackMode(new URLSearchParams(window.location.search).get("pack") === "1");
+  }, []);
+
   const [examId, setExamId] = useState(defaultExam);
   const exam = getExam(examId);
   const [mode, setMode] = useState("archivo");
@@ -79,7 +87,7 @@ export default function Ui({ defaultExam = "paes" }) {
 
   return (
     <main>
-      <div className="paises">
+      <div className="paises no-print">
         {Object.values(EXAMS).map((e) => (
           <button
             key={e.id}
@@ -97,20 +105,32 @@ export default function Ui({ defaultExam = "paes" }) {
         ))}
       </div>
 
-      <h1>
+      <h1 className="no-print">
         Tu último {exam.ensayo} se convierte en <span className="accent">tu plan</span>
       </h1>
-      <p className="pitch">
+      <p className="pitch no-print">
         Diagnóstico con IA, ruta de estudio de 14 días y ejercicios dirigidos — por{" "}
         {exam.ancla}.
       </p>
-      <p className="urgencia">
+      <p className="urgencia no-print">
         Quedan {semanasRestantes(exam)} semanas para el {exam.nombre} de {exam.pais} ·
         Sube el informe de tu último {exam.ensayo} y sabe qué atacar primero.
       </p>
 
+      {packMode && result && (
+        <div className="pack-header">
+          <h1>
+            Tu Ruta {exam.nombre} — plan de 14 días
+          </h1>
+          <p>
+            {exam.nombreLargo} · {exam.organismo} · {exam.fechaTexto} ·{" "}
+            {result.prueba || ""}
+          </p>
+        </div>
+      )}
+
       {!result && (
-        <form className="card" onSubmit={onSubmit}>
+        <form className="card no-print" onSubmit={onSubmit}>
           <div className="tabs">
             <button
               type="button"
@@ -196,7 +216,7 @@ export default function Ui({ defaultExam = "paes" }) {
 
           <div className="card">
             <h2 style={{ marginTop: 0 }}>Tu ruta de 14 días</h2>
-            {(result.ruta || []).slice(0, 5).map((r) => (
+            {(packMode ? result.ruta || [] : (result.ruta || []).slice(0, 5)).map((r) => (
               <div className="dia" key={r.dia}>
                 <div className="n">DÍA {r.dia}</div>
                 <div className="foco">{r.foco}</div>
@@ -204,7 +224,7 @@ export default function Ui({ defaultExam = "paes" }) {
                 <div className="porque">{r.porque}</div>
               </div>
             ))}
-            {(result.ruta || []).length > 5 && (
+            {!packMode && (result.ruta || []).length > 5 && (
               <div className="locked">
                 {(result.ruta || []).slice(5, 8).map((r) => (
                   <div className="dia" key={r.dia}>
@@ -219,7 +239,7 @@ export default function Ui({ defaultExam = "paes" }) {
 
           <div className="card">
             <h2 style={{ marginTop: 0 }}>Ejercicios dirigidos a tus ejes débiles</h2>
-            {(result.drills || []).slice(0, 1).map((d, i) => (
+            {(packMode ? result.drills || [] : (result.drills || []).slice(0, 1)).map((d, i) => (
               <div className="drill" key={i}>
                 <div className="n" style={{ color: "var(--accent)", fontSize: "0.8rem", fontWeight: 700 }}>
                   {d.eje}
@@ -230,15 +250,23 @@ export default function Ui({ defaultExam = "paes" }) {
                     <li key={j}>{a}</li>
                   ))}
                 </ol>
-                <details>
-                  <summary>Ver solución</summary>
-                  <p>
+                {/* En el pack la solucion va abierta: un <details> cerrado se
+                    imprime vacio y el PDF llegaria sin las soluciones. */}
+                {packMode ? (
+                  <p className="solucion">
                     <strong>Correcta: {d.correcta}.</strong> {d.solucion}
                   </p>
-                </details>
+                ) : (
+                  <details>
+                    <summary>Ver solución</summary>
+                    <p>
+                      <strong>Correcta: {d.correcta}.</strong> {d.solucion}
+                    </p>
+                  </details>
+                )}
               </div>
             ))}
-            {(result.drills || []).length > 1 && (
+            {!packMode && (result.drills || []).length > 1 && (
               <div className="locked">
                 {(result.drills || []).slice(1, 2).map((d, i) => (
                   <div className="drill" key={i}>
@@ -253,6 +281,7 @@ export default function Ui({ defaultExam = "paes" }) {
               </div>
             )}
 
+            {!packMode && (
             <div className="paywall">
               <div className="precio">{exam.precioTexto}</div>
               <div className="nota">
@@ -299,15 +328,29 @@ export default function Ui({ defaultExam = "paes" }) {
                 </a>
               )}
             </div>
+            )}
           </div>
 
-          <button className="btn secondary" onClick={() => setResult(null)}>
+          {packMode && (
+            <>
+              <p className="pack-pie">
+                Preparado para ti por Ruta {exam.nombre}. Los ejercicios son
+                originales y siguen el temario oficial de {exam.organismo}. Si algo
+                no te calza con tu informe, escríbeme y lo corrijo.
+              </p>
+              <button className="btn no-print" onClick={() => window.print()}>
+                Imprimir / Guardar como PDF
+              </button>
+            </>
+          )}
+
+          <button className="btn secondary no-print" onClick={() => setResult(null)}>
             Hacer otro diagnóstico
           </button>
         </>
       )}
 
-      <footer>
+      <footer className="no-print">
         Ruta PAES · ejercicios originales alineados al {`temario oficial de ${exam.organismo}`} · operado por
         agentes de IA · v1.0 multipaís
       </footer>

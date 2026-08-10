@@ -78,3 +78,28 @@ details p { color: var(--muted); font-size: 0.92rem; margin-top: 6px; }
 
 .loading { text-align: center; color: var(--muted); padding: 30px 0; }
 footer { margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.8rem; }
+
+/* Vista de entrega (?pack=1) */
+.pack-header { margin-bottom: 18px; }
+.pack-header h1 { font-size: 1.5rem; margin-bottom: 4px; }
+.pack-header p { color: var(--muted); font-size: 0.85rem; }
+.solucion { color: var(--muted); font-size: 0.92rem; margin-top: 8px; }
+.pack-pie { color: var(--muted); font-size: 0.85rem; margin-top: 16px; }
+
+/* Impresion a PDF: el tema oscuro gasta tinta y se lee pesimo en papel, asi
+   que el pack se imprime negro sobre blanco. .no-print saca todo lo que es
+   interfaz (formulario, navegacion, botones) y deja solo el contenido. */
+@media print {
+  html, body { background: #fff; color: #111; }
+  main { max-width: none; padding: 0; }
+  .no-print { display: none !important; }
+  .card { background: #fff; border: 1px solid #ddd; padding: 12px; margin-bottom: 10px; break-inside: avoid; }
+  .dia, .drill, .diag-item { break-inside: avoid; }
+  .dia .n { color: #8a5a00; }
+  .dia .porque, .drill li, .solucion, .pack-header p, .pack-pie { color: #444; }
+  .diag-item { border-bottom: 1px solid #ddd; }
+  .dia, .drill { border-bottom: 1px solid #eee; }
+  .nivel { border: 1px solid #bbb; color: #111 !important; background: none !important; }
+  h1, h2 { color: #111; }
+  a { color: inherit; text-decoration: none; }
+}
