@@ -35,6 +35,7 @@ function recortarParaVisitante(data) {
 }
 
 export async function POST(req) {
+  const tStart = Date.now();
   const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const startedAt = new Date().toISOString();
 
@@ -71,10 +72,16 @@ export async function POST(req) {
     // Si el QA revienta, se entregan los drills originales (fail-safe).
     let qaResult = { skipped: true, reason: "error" };
     try {
-      // presupuesto duro: si el QA se demora, entregamos igual (el usuario manda)
+      // Presupuesto duro y ADAPTATIVO: la funcion muere a los 60s. Lo que le
+      // demos al QA es lo que sobra tras la generacion, con 8s de colchon para
+      // serializar y loguear. Si no sobra nada, se entrega sin QA: un pack sin
+      // revisar es peor que uno revisado, pero infinitamente mejor que un
+      // timeout que no entrega nada.
+      const qaMs = Math.min(18000, 52000 - (Date.now() - tStart));
+      if (qaMs < 4000) throw new Error(`sin presupuesto para QA (quedaban ${qaMs}ms)`);
       const q = await Promise.race([
         qaDrills(data.drills, data.prueba, examId),
-        new Promise((_, rej) => setTimeout(() => rej(new Error("qa timeout 18s")), 18000)),
+        new Promise((_, rej) => setTimeout(() => rej(new Error(`qa timeout ${qaMs}ms`)), qaMs)),
       ]);
       data.drills = q.drills;
       qaResult = q.qa;
@@ -99,6 +106,7 @@ export async function POST(req) {
       dias: (data.ruta || []).length,
       drills: (data.drills || []).length,
       entrega: operador ? "pack" : "muestra",
+      totalMs: Date.now() - tStart,
       ok: true,
     };
     console.log(JSON.stringify(runLog));
