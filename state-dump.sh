@@ -89,20 +89,31 @@ echo '```'
 echo
 echo "### Candado: un visitante sin clave NO debe recibir el pack"
 echo '```'
-# Se mide el LARGO REAL del array, no el campo "dias" del payload: ese campo
-# lleva el total generado (metadato) y no lo que se entrego. Confundirlos hacia
-# que el chequeo dijera 13 cuando el visitante habia recibido 8.
-curl -fsSL -m 90 -X POST "$APP/api/diagnostico" \
+# Solo curl y grep: node no esta en el PATH de Git Bash en el PC de Diego.
+#
+# Se mide el LARGO REAL de lo entregado contando los elementos del array, no el
+# campo "dias" del payload: ese campo lleva el total generado (metadato) y no lo
+# que se entrego. Confundirlos hacia que el chequeo dijera 13 cuando el visitante
+# habia recibido 8.
+RESP=$(curl -fsSL -m 90 -X POST "$APP/api/diagnostico" \
   -H "Content-Type: application/json" \
-  -d '{"scores":{"prueba":"Matemática M1","puntaje":"612"},"examId":"paes"}' 2>/dev/null \
-  | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);
-const d2=(j.drills||[])[1]||{};
-console.log(`full=${j.full} ruta_entregada=${(j.ruta||[]).length} drills=${(j.drills||[]).length} drill2_con_solucion=${"solucion" in d2} totalMs=${j.totalMs}`);
-}catch(e){console.log("(respuesta no parseable)")}})' \
-  || echo "(sin respuesta)"
+  -d '{"scores":{"prueba":"Matemática M1","puntaje":"612"},"examId":"paes"}' 2>/dev/null)
+
+if [ -z "$RESP" ]; then
+  echo "(sin respuesta)"
+else
+  full=$(printf '%s' "$RESP"    | grep -o '"full":[a-z]*'      | head -1 | cut -d: -f2)
+  ruta=$(printf '%s' "$RESP"    | grep -o '"dia":[0-9]*'       | wc -l | tr -d ' ')
+  drills=$(printf '%s' "$RESP"  | grep -o '"enunciado":'       | wc -l | tr -d ' ')
+  soluc=$(printf '%s' "$RESP"   | grep -o '"solucion":'        | wc -l | tr -d ' ')
+  ms=$(printf '%s' "$RESP"      | grep -o '"totalMs":[0-9]*'   | head -1 | cut -d: -f2)
+  echo "full=${full:-?} ruta_entregada=${ruta} drills=${drills} soluciones=${soluc} totalMs=${ms:-?}"
+fi
 echo '```'
-echo "Esperado: full=false, ruta_entregada=8, drill2_con_solucion=false."
-echo "Si sale full=true o ruta_entregada>8, el candado esta abierto."
+echo "Esperado: full=false, ruta_entregada=8, drills=2, soluciones=1."
+echo "soluciones=2 significa que se esta regalando la solucion del segundo ejercicio."
+echo "full=true o ruta_entregada>8 significa que el candado esta abierto."
+echo "totalMs cerca de 60000 significa que se esta rozando el techo de la funcion."
 } > "$OUT"
 
 echo "escrito $OUT"
