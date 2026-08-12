@@ -140,11 +140,18 @@ export default function Ui({ defaultExam = "paes" }) {
                 : "Falta configurar PACK_KEY en Vercel; sin esa variable el servidor no entrega el pack completo a nadie."}
             </div>
           )}
-          {result.full && result.completo === false && (
+          {result.full && result.entregable === false && (
             <div className="error no-print">
               <strong>Pack incompleto — no lo mandes así.</strong> El modelo
               devolvió {result.dias} de 14 días y {result.totalDrills} de 4
               ejercicios, incluso después del reintento. Vuelve a generarlo.
+            </div>
+          )}
+          {result.full && result.entregable && result.completo === false && (
+            <div className="aviso no-print">
+              <strong>Le faltan {14 - result.dias} día(s) a la ruta.</strong> Los{" "}
+              {result.totalDrills} ejercicios están completos, así que se puede
+              mandar igual. Si prefieres los 14 exactos, vuelve a generarlo.
             </div>
           )}
         </>

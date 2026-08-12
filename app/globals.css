@@ -45,6 +45,9 @@ textarea { min-height: 90px; resize: vertical; }
 .btn.secondary { background: transparent; border: 1px solid var(--accent-2); color: var(--accent-2); }
 
 .error { background: rgba(255, 93, 93, 0.12); border: 1px solid var(--bad); color: #ffb4b4; padding: 12px; border-radius: 10px; margin-top: 14px; font-size: 0.92rem; }
+/* Ambar: se puede entregar pero no es perfecto. Distinto del rojo a proposito:
+   un aviso que salta cuando no pasa nada deja de leerse cuando si pasa. */
+.aviso { background: rgba(255, 210, 58, 0.10); border: 1px solid var(--mid); color: #ffe08a; padding: 12px; border-radius: 10px; margin-top: 14px; font-size: 0.92rem; }
 
 .nivel { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
 .nivel.fuerte { background: rgba(62, 207, 114, 0.15); color: var(--ok); }
