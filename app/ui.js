@@ -147,6 +147,13 @@ export default function Ui({ defaultExam = "paes" }) {
               ejercicios, incluso después del reintento. Vuelve a generarlo.
             </div>
           )}
+          {result.full && (result.ingles || []).length > 0 && (
+            <div className="aviso no-print">
+              <strong>Hay texto en inglés en el pack.</strong> Se detectó:{" "}
+              {result.ingles.join(", ")}. El estudiante lo va a notar — vuelve a
+              generarlo antes de mandarlo.
+            </div>
+          )}
           {result.full && result.entregable && result.completo === false && (
             <div className="aviso no-print">
               <strong>Le faltan {14 - result.dias} día(s) a la ruta.</strong> Los{" "}
