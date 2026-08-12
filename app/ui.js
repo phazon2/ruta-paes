@@ -143,7 +143,7 @@ export default function Ui({ defaultExam = "paes" }) {
           {result.full && result.completo === false && (
             <div className="error no-print">
               <strong>Pack incompleto — no lo mandes así.</strong> El modelo
-              devolvió {result.dias} de 14 días y {result.totalDrills} de 2
+              devolvió {result.dias} de 14 días y {result.totalDrills} de 4
               ejercicios, incluso después del reintento. Vuelve a generarlo.
             </div>
           )}
