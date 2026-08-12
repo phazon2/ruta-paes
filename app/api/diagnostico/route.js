@@ -77,7 +77,7 @@ export async function POST(req) {
       // serializar y loguear. Si no sobra nada, se entrega sin QA: un pack sin
       // revisar es peor que uno revisado, pero infinitamente mejor que un
       // timeout que no entrega nada.
-      const qaMs = Math.min(18000, 52000 - (Date.now() - tStart));
+      const qaMs = Math.min(18000, 48000 - (Date.now() - tStart));
       if (qaMs < 4000) throw new Error(`sin presupuesto para QA (quedaban ${qaMs}ms)`);
       const q = await Promise.race([
         qaDrills(data.drills, data.prueba, examId),
