@@ -8,6 +8,7 @@ export const maxDuration = 60;
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
 export async function POST(req) {
+  const tStart = Date.now();
   const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const startedAt = new Date().toISOString();
   let productId = null;
@@ -36,9 +37,14 @@ export async function POST(req) {
 
     let qa = { skipped: true, reason: "error" };
     try {
+      // Presupuesto adaptativo, igual que en /api/diagnostico: al QA le toca lo
+      // que sobra de los 60s con colchon. Sin esto, un documento pesado mas un
+      // reintento empujan la funcion sobre el techo y el usuario no recibe nada.
+      const qaMs = Math.min(18000, 48000 - (Date.now() - tStart));
+      if (qaMs < 4000) throw new Error(`sin presupuesto para QA (quedaban ${qaMs}ms)`);
       qa = await Promise.race([
         qaVerdicto(data, productId),
-        new Promise((_, rej) => setTimeout(() => rej(new Error("qa timeout 18s")), 18000)),
+        new Promise((_, rej) => setTimeout(() => rej(new Error(`qa timeout ${qaMs}ms`)), qaMs)),
       ]);
     } catch (e) {
       qa = { skipped: true, reason: String(e?.message || e) };
@@ -54,6 +60,9 @@ export async function POST(req) {
       inputMode: fileBase64 ? "file" : "texto",
       hallazgos: (data.diagnostico || []).length,
       pasos: (data.ruta || []).length,
+      drills: (data.drills || []).length,
+      artefactoCompleto: data.completo === true,
+      totalMs: Date.now() - tStart,
       qa,
       ok: true,
     };
@@ -62,7 +71,7 @@ export async function POST(req) {
       await logRun(runLog);
     } catch (_) {}
 
-    return NextResponse.json({ runId, qa, ...data });
+    return NextResponse.json({ runId, qa, totalMs: Date.now() - tStart, ...data });
   } catch (err) {
     const errLog = {
       type: "verdicto_run",
