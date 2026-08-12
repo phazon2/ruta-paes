@@ -1,1 +1,2 @@
 {"type":"health_partial","runId":"health_1786565679529","steps":{"diagnostico":{"ok":true,"ms":29215,"model":"gemini-3.6-flash","ejes":4,"dias":14,"drills":2}}}
+{"type":"health_check","runId":"health_1786565679529","steps":{"diagnostico":{"ok":true,"ms":29215,"model":"gemini-3.6-flash","ejes":4,"dias":14,"drills":2},"qa":{"ok":true,"ms":5331,"skipped":false,"revisados":2,"rechazados":0,"verdicts":[{"index":0,"verdict":"pass","motivo":null},{"index":1,"verdict":"pass","motivo":null}]}}}
