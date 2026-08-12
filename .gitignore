@@ -10,3 +10,6 @@ out/
 
 .vercel
 .env*
+
+# state dump
+ruta-paes-state.md

@@ -119,6 +119,8 @@ export async function POST(req) {
     return NextResponse.json({
       runId,
       full: operador,
+      // headroom contra el techo de 60s, medible desde afuera sin abrir Vercel
+      totalMs: Date.now() - tStart,
       packKeyConfigurada: Boolean(process.env.PACK_KEY),
       ...(operador ? data : recortarParaVisitante(data)),
     });
