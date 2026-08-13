@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateDiagnostico } from "../../../lib/gemini";
+import { generateDiagnostico, mensajeUsuario } from "../../../lib/gemini";
 import { qaDrills } from "../../../lib/qa";
 import { logRun } from "../../../lib/oplog";
 
@@ -141,8 +141,7 @@ export async function POST(req) {
     }
     return NextResponse.json(
       {
-        error: "No pudimos generar tu diagnóstico. Intenta de nuevo en un momento.",
-        detalle: String(err && err.message ? err.message : err),
+        error: mensajeUsuario(err),
         runId,
       },
       { status: 500 }

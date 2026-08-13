@@ -78,7 +78,7 @@ export default function Ui({ defaultExam = "paes" }) {
       if (!res.ok) {
         throw new Error(
           (data.error || "Error generando el diagnóstico") +
-            (data.detalle ? ` [${data.detalle}]` : "")
+            ""
         );
       }
       setResult(data);

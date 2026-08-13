@@ -55,7 +55,7 @@ export default function ProductoUi({ p }) {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error((data.error || "Error") + (data.detalle ? ` [${data.detalle}]` : ""));
+      if (!res.ok) throw new Error(data.error || "No pudimos generar tu resultado.");
       setResult(data);
     } catch (err) {
       setError(err.message);

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateVerdicto, qaVerdicto } from "../../../lib/verdicto";
+import { mensajeUsuario } from "../../../lib/gemini";
 import { logRun } from "../../../lib/oplog";
 
 export const runtime = "nodejs";
@@ -119,7 +120,7 @@ export async function POST(req) {
       await logRun(errLog);
     } catch (_) {}
     return NextResponse.json(
-      { error: "No pudimos generar tu resultado. Intenta de nuevo en un momento.", detalle: String(err?.message || err) },
+      { error: mensajeUsuario(err) },
       { status: 500 }
     );
   }
