@@ -7,6 +7,28 @@ export const maxDuration = 60;
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
+// Mismo candado que /api/diagnostico y por la misma razon: sin esto el plan
+// completo y las dos soluciones viajan al navegador y la pagina solo los tapa
+// con un blur. Cualquiera con la pestaña de red abierta se lleva gratis lo que
+// se cobra. Falla cerrado: sin PACK_KEY nadie recibe el pack, ni el operador.
+function esOperador(packKey) {
+  const real = process.env.PACK_KEY || "";
+  return real.length > 0 && packKey === real;
+}
+
+function recortarParaVisitante(data) {
+  const drills = (data.drills || []).slice(0, 2).map((d, i) => {
+    if (i === 0) return d; // el primero va completo: es la muestra
+    const { solucion, correcta, ...sinRespuesta } = d;
+    return sinRespuesta;
+  });
+  return {
+    ...data,
+    ruta: (data.ruta || []).slice(0, 8), // 5 visibles + 3 borrosos
+    drills,
+  };
+}
+
 export async function POST(req) {
   const tStart = Date.now();
   const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -15,8 +37,9 @@ export async function POST(req) {
 
   try {
     const body = await req.json();
-    const { fileBase64, mimeType, texto } = body || {};
+    const { fileBase64, mimeType, texto, packKey } = body || {};
     productId = body?.productId;
+    const operador = esOperador(packKey);
 
     if (fileBase64) {
       if (Math.floor(fileBase64.length * 0.75) > MAX_FILE_BYTES) {
@@ -62,6 +85,8 @@ export async function POST(req) {
       pasos: (data.ruta || []).length,
       drills: (data.drills || []).length,
       artefactoCompleto: data.completo === true,
+      entrega: operador ? "pack" : "muestra",
+      ingles: data.ingles || [],
       totalMs: Date.now() - tStart,
       qa,
       ok: true,
@@ -71,7 +96,14 @@ export async function POST(req) {
       await logRun(runLog);
     } catch (_) {}
 
-    return NextResponse.json({ runId, qa, totalMs: Date.now() - tStart, ...data });
+    return NextResponse.json({
+      runId,
+      qa,
+      full: operador,
+      packKeyConfigurada: Boolean(process.env.PACK_KEY),
+      totalMs: Date.now() - tStart,
+      ...(operador ? data : recortarParaVisitante(data)),
+    });
   } catch (err) {
     const errLog = {
       type: "verdicto_run",

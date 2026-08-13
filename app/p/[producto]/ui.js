@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Mismo orden que en la home: WhatsApp primero, pago despues. Ver el comentario
 // largo en app/ui.js. Fallback al link de pago solo si no hay numero configurado.
@@ -8,6 +8,16 @@ const MP_LINK = "https://mpago.li/1ACDfPj";
 const WSP = process.env.NEXT_PUBLIC_WSP_NUMBER || "";
 
 export default function ProductoUi({ p }) {
+  // Vista de entrega (?pack=1&key=...): igual que en Ruta PAES. La usa Diego
+  // despues del pago, no el cliente. El recorte real ocurre en el servidor.
+  const [packMode, setPackMode] = useState(false);
+  const [packKey, setPackKey] = useState("");
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    setPackMode(sp.get("pack") === "1");
+    setPackKey(sp.get("key") || "");
+  }, []);
+
   const [mode, setMode] = useState("archivo");
   const [file, setFile] = useState(null);
   const [texto, setTexto] = useState("");
@@ -35,6 +45,7 @@ export default function ProductoUi({ p }) {
       if (texto.trim().length < 15) return setError("Cuéntame un poco más para poder ayudarte.");
       payload = { ...payload, texto };
     }
+    if (packKey) payload.packKey = packKey;
 
     setLoading(true);
     try {
@@ -55,12 +66,42 @@ export default function ProductoUi({ p }) {
 
   return (
     <main>
-      <h1>{p.tagline}</h1>
-      <p className="pitch">{p.subtitulo}</p>
-      <p className="urgencia">{p.privacidad}</p>
+      <h1 className="no-print">{p.tagline}</h1>
+      <p className="pitch no-print">{p.subtitulo}</p>
+      <p className="urgencia no-print">{p.privacidad}</p>
+
+      {packMode && result && (
+        <>
+          <div className="pack-header">
+            <h1>{p.nombre} — tu plan de {result.pasos || 14} días</h1>
+            <p>{p.categoria} · preparado a partir de tu propio documento</p>
+          </div>
+          {result.full === false && (
+            <div className="error no-print">
+              <strong>Esto es la muestra, no el pack.</strong>{" "}
+              {result.packKeyConfigurada
+                ? "La clave del link no es válida: revisa el parámetro key."
+                : "Falta configurar PACK_KEY en Vercel."}
+            </div>
+          )}
+          {result.full && (result.ingles || []).length > 0 && (
+            <div className="aviso no-print">
+              <strong>Hay texto en inglés en el pack.</strong> Se detectó:{" "}
+              {result.ingles.join(", ")}. Vuelve a generarlo antes de mandarlo.
+            </div>
+          )}
+          {result.full && result.completo === false && (
+            <div className="error no-print">
+              <strong>Pack incompleto — no lo mandes así.</strong> Volvieron{" "}
+              {result.pasos} de 14 pasos y {result.totalDrills} de 2 artefactos.
+              Vuelve a generarlo.
+            </div>
+          )}
+        </>
+      )}
 
       {!result && (
-        <form className="card" onSubmit={onSubmit}>
+        <form className="card no-print" onSubmit={onSubmit}>
           <div className="tabs">
             <button type="button" className={mode === "archivo" ? "active" : ""} onClick={() => setMode("archivo")}>
               Subir documento
@@ -115,7 +156,7 @@ export default function ProductoUi({ p }) {
 
           <div className="card">
             <h2 style={{ marginTop: 0 }}>Tu plan de 14 días</h2>
-            {(result.ruta || []).slice(0, 5).map((r) => (
+            {(packMode ? result.ruta || [] : (result.ruta || []).slice(0, 5)).map((r) => (
               <div className="dia" key={r.dia}>
                 <div className="n">DÍA {r.dia}</div>
                 <div className="foco">{r.foco}</div>
@@ -123,7 +164,7 @@ export default function ProductoUi({ p }) {
                 <div className="porque">{r.porque}</div>
               </div>
             ))}
-            {(result.ruta || []).length > 5 && (
+            {!packMode && (result.ruta || []).length > 5 && (
               <div className="locked">
                 {(result.ruta || []).slice(5, 8).map((r) => (
                   <div className="dia" key={r.dia}>
@@ -138,7 +179,7 @@ export default function ProductoUi({ p }) {
 
           <div className="card">
             <h2 style={{ marginTop: 0 }}>Lo que te queda listo</h2>
-            {(result.drills || []).slice(0, 1).map((d, i) => (
+            {(packMode ? result.drills || [] : (result.drills || []).slice(0, 1)).map((d, i) => (
               <div className="drill" key={i}>
                 <div style={{ color: "var(--accent)", fontSize: "0.8rem", fontWeight: 700 }}>{d.eje}</div>
                 <div className="enunciado">{d.enunciado}</div>
@@ -147,15 +188,24 @@ export default function ProductoUi({ p }) {
                     <li key={j}>{a}</li>
                   ))}
                 </ol>
-                <details>
-                  <summary>Ver recomendación</summary>
-                  <p>
+                {/* En el pack la recomendacion va abierta: un <details> cerrado
+                    se imprime vacio y el PDF saldria sin lo que se cobra. */}
+                {packMode ? (
+                  <p className="solucion">
                     <strong>{d.correcta}.</strong> {d.solucion}
                   </p>
-                </details>
+                ) : (
+                  <details>
+                    <summary>Ver recomendación</summary>
+                    <p>
+                      <strong>{d.correcta}.</strong> {d.solucion}
+                    </p>
+                  </details>
+                )}
               </div>
             ))}
 
+            {!packMode && (
             <div className="paywall">
               <div className="precio">{p.precio}</div>
               <div className="nota">
@@ -196,15 +246,28 @@ export default function ProductoUi({ p }) {
                 </a>
               )}
             </div>
+            )}
           </div>
 
-          <button className="btn secondary" onClick={() => setResult(null)}>
+          {packMode && (
+            <>
+              <p className="pack-pie">
+                Preparado para ti por {p.nombre}. Si algo no te calza con tu
+                documento, escríbeme y lo corrijo.
+              </p>
+              <button className="btn no-print" onClick={() => window.print()}>
+                Imprimir / Guardar como PDF
+              </button>
+            </>
+          )}
+
+          <button className="btn secondary no-print" onClick={() => setResult(null)}>
             Hacer otro análisis
           </button>
         </>
       )}
 
-      <footer>
+      <footer className="no-print">
         {p.nombre} · operado por agentes de IA · cada resultado revisado por un agente de QA
       </footer>
     </main>
